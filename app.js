@@ -40,6 +40,43 @@ app.get("/profile", isLoggedIn, async (req, res) => {
     }
 });
 
+app.get("/like/:id", isLoggedIn, async (req, res) => {
+    try {
+        // Fetch the user and populate posts
+        let post = await postModel.findOne({ _id: req.params.id }).populate("user")
+
+        if(post.likes.indexOf(req.user.userid) === -1){
+            post.likes.push(req.user.userid)
+        }else{
+            post.likes.splice(post.likes.indexOf(req.user.userid), 1)
+        }
+        await post.save()
+        res.redirect("/profile")
+    } catch (err) {
+        console.error("Error loading profile:", err);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+app.get("/edit/:id", isLoggedIn, async (req, res) => {
+    try {
+        let post = await postModel.findOne({ _id: req.params.id }).populate("user")
+        res.render("edit", {post})
+    } catch (err) {
+        console.error("Error loading profile:", err);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+app.post("/update/:id", isLoggedIn, async (req, res) => {
+    try {
+        let post = await postModel.findOneAndUpdate({ _id: req.params.id }, {content: req.body.content})
+        res.redirect("/profile")
+    } catch (err) {
+        console.error("Error loading profile:", err);
+        res.status(500).send("Internal Server Error");
+    }
+});
 
 app.post("/addpost",isLoggedIn,async (req,res)=>{
     let user = await userModel.findOne({email: req.user.email})
@@ -83,7 +120,7 @@ app.post("/register", async (req, res) => {
 
                     let token = jwt.sign({ email, userid: newUser._id }, "shhh");
                     res.cookie("token", token, { httpOnly: true });
-                    res.send("SignedUp");
+                    res.redirect("profile");
                 } catch (err) {
                     res.status(500).send("Error creating user");
                 }
@@ -110,7 +147,7 @@ app.post("/login", async (req, res) => {
             if (result) {
                 const token = jwt.sign({ email, userid: user._id }, "shhh");
                 res.cookie("token", token, { httpOnly: true });
-                return res.status(200).send("You are logged in!");
+                return res.status(200).redirect("profile");
             } else {
                 return res.status(400).send("Invalid email or password.");
             }
@@ -137,6 +174,24 @@ function isLoggedIn(req, res, next) {
         return res.redirect("/login"); // Redirect if token is invalid
     }
 }
+
+app.get("/homepage", isLoggedIn, async (req, res) => {
+    try {
+        // Fetch all posts and populate user information
+        let posts = await postModel.find().populate("user");
+
+        if (!posts) {
+            return res.status(404).send("No posts available.");
+        }
+
+        // Pass posts and user to the view
+        res.render("homepage", { posts, user: req.user });
+    } catch (err) {
+        console.error("Error fetching posts:", err);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
 
 
 

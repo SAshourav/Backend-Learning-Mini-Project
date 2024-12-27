@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homepage</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body class="bg-zinc-900 text-white min-h-screen">
+    <div class="container mx-auto p-6">
+        <!-- Header Section -->
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold">Welcome to the Homepage</h1>
+            <a href="/profile" class="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-zinc-900 transition duration-300">Go to Profile</a>
+        </div>
+
+        <!-- All Posts Section -->
+        <div>
+            <h2 class="text-2xl font-semibold mb-4">All Posts</h2>
+            <% if (!posts || posts.length === 0) { %>
+                <p class="text-gray-400">No posts available.</p>
+            <% } else { %>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <% posts.forEach(function(post) { %>
+                        <div class="bg-zinc-800 p-4 rounded-lg shadow-md hover:shadow-xl hover:bg-zinc-700 transition duration-300">
+                            <p class="text-gray-300 mb-4"><%= post.content %></p>
+                            <div class="flex items-center justify-between text-gray-400 text-sm">
+                                <span class="text-gray-500">
+                                    Posted on <%= post.date ? new Date(post.date).toDateString() : "Unknown date" %>
+                                </span>
+                                <span class="text-gray-500">
+                                    Posted by <%= post.user.name %>
+                                </span>
+                            </div>
+                            <span class="flex items-center gap-1 mt-2 text-gray-400 hover:text-red-400 transition duration-300">
+                                <i class="fas fa-heart text-red-500"></i> <%= post.likes.length %> likes
+                            </span>
+                            <div class="mt-2 flex items-center justify-between text-gray-400 text-sm">
+                                <a class="text-blue-500 hover:text-blue-400 transition duration-300" href="/like/<%= post._id %>">
+                                    <%= post.likes.indexOf(user._id) === -1 ? "Like" : "Unlike" %>
+                                </a>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</body>
+</html>
