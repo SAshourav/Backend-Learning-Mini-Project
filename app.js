@@ -24,6 +24,9 @@ app.get("/logout", (req, res)=>{
     res.cookie("token" ,"")
     res.redirect("/login")
 })
+app.get("/profile",isLoggedIn,(req,res)=>{
+    console.log(req.user)
+})
 
 app.post("/register", async (req, res) => {
     let { email, password, username, name, age } = req.body;
@@ -66,24 +69,48 @@ app.post("/register", async (req, res) => {
 });
 
 app.post("/login", async (req, res) => {
-    let { email, password } = req.body;
+    const { email, password } = req.body;
     try {
-        let user = await userModel.findOne({ email });
+        const user = await userModel.findOne({ email });
         if (!user) {
-            return res.status(400).send("Somthing Went Wrong");
+            return res.status(400).send("Invalid email or password.");
         }
-        bcrypt.compare(password, user.password, (err, result)=>{
-            if(result){
-                res.status(200).send("You Are logged in !")
-            }else{
-                res.redirect('/login')
+
+        bcrypt.compare(password, user.password, (err, result) => {
+            if (err) {
+                return res.status(500).send("Error during password validation.");
             }
-        })
-        
+
+            if (result) {
+                const token = jwt.sign({ email, userid: user._id }, "shhh");
+                res.cookie("token", token, { httpOnly: true });
+                return res.status(200).send("You are logged in!");
+            } else {
+                return res.status(400).send("Invalid email or password.");
+            }
+        });
     } catch (err) {
-        res.status(500).send("Server error");
+        console.error(err);
+        res.status(500).send("Server error.");
     }
 });
+
+
+function isLoggedIn(req, res, next) {
+    const token = req.cookies.token; // Corrected: use req.cookies
+    if (!token) {
+        return res.redirect("/login"); // Redirect if token is missing
+    }
+
+    try {
+        const data = jwt.verify(token, "shhh");
+        req.user = data; // Attach user data to the request
+        next();
+    } catch (err) {
+        console.error("Invalid token:", err);
+        return res.redirect("/login"); // Redirect if token is invalid
+    }
+}
 
 
 
