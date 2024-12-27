@@ -24,8 +24,34 @@ app.get("/logout", (req, res)=>{
     res.cookie("token" ,"")
     res.redirect("/login")
 })
-app.get("/profile",isLoggedIn,(req,res)=>{
-    console.log(req.user)
+app.get("/profile", isLoggedIn, async (req, res) => {
+    try {
+        // Fetch the user and populate posts
+        let user = await userModel.findOne({ email: req.user.email }).populate("posts");
+
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+
+        res.render("profile", { user });
+    } catch (err) {
+        console.error("Error loading profile:", err);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+
+app.post("/addpost",isLoggedIn,async (req,res)=>{
+    let user = await userModel.findOne({email: req.user.email})
+    let {content} = req.body
+    let post = await postModel.create({
+        user: user._id,
+        content
+    })
+
+    user.posts.push(post._id)
+    await user.save()
+    res.redirect('/profile')
 })
 
 app.post("/register", async (req, res) => {

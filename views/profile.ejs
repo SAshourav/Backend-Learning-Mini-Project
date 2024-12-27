@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body class="bg-zinc-900 text-white min-h-screen">
+    <div class="container mx-auto p-6">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold">Welcome, <%= user.name %>!</h1>
+        </div>
+
+        <!-- New Post Form -->
+        <div class="bg-zinc-800 p-6 rounded-lg shadow-lg mb-10">
+            <h2 class="text-2xl font-semibold mb-4">Create a New Post</h2>
+            <form action="/addpost" method="post" class="space-y-4">
+                <textarea 
+                    name="content" 
+                    rows="4" 
+                    placeholder="Write something amazing..." 
+                    class="w-full px-4 py-2 bg-zinc-700 text-gray-200 border border-zinc-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </textarea>
+                <button 
+                    type="submit" 
+                    class="w-full py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-zinc-900">
+                    Post
+                </button>
+            </form>
+        </div>
+
+        <!-- User Posts -->
+        <div>
+            <h2 class="text-2xl font-semibold mb-4">Your Posts</h2>
+        
+            <% if (!user.posts || user.posts.length === 0) { %>
+                <p class="text-gray-400">You have no posts yet. Create one now!</p>
+            <% } else { %>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <% user.posts.forEach(function(post) { %>
+                        <div class="bg-zinc-800 p-4 rounded-lg shadow-md">
+                            <p class="text-gray-300 mb-4"><%= post.content %></p>
+                            <div class="flex items-center justify-between text-gray-400 text-sm">
+                                <span class="text-gray-500">
+                                    Posted on <%= post.date ? new Date(post.date).toDateString() : "Unknown date" %>
+                                </span>
+                                <span class="text-gray-500">
+                                    Posted by <%= user.name %>
+                                </span>
+                            </div>
+                            <div class="mt-2 flex items-center justify-between text-gray-400 text-sm">
+                                <a class="text-blue-500" href="">Like</a>
+                                <a class="text-zinc-600" href="">edit</a>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } %>
+        </div>
+        
+    </div>
+</body>
+</html>
